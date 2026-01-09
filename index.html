@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Tracker - Interactive Demo</title>
+    <style>
+        /* --- CSS VARS (Best Practice) --- */
+        :root {
+            --app-primary-color: #2c3e50;
+            --app-accent-gradient-start: #667eea;
+            --app-accent-gradient-end: #764ba2;
+            --app-text-color: #333;
+            --app-secondary-text: #7f8c8d;
+            --app-bg-color: #f4f6f9;
+        }
+        /* --- GLOBAL STYLES --- */
+        body {
+            background-color: var(--app-bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+            color: var(--app-text-color);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--app-primary-color);
+        }
+        .date {
+            color: var(--app-secondary-text);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        /* --- TABS --- */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+        .tab {
+            background: transparent;
+            border: 2px solid #e0e0e0;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--app-secondary-text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: var(--app-primary-color);
+            color: white;
+            border-color: var(--app-primary-color);
+        }
+        .tab:hover:not(.active) {
+            border-color: #bbb;
+        }
+        /* --- CARDS --- */
+        .summary-card {
+            background: linear-gradient(135deg, var(--app-accent-gradient-start) 0%, var(--app-accent-gradient-end) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .summary-card h2 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-top: 0;
+        }
+        .total-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        .add-item-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+            margin-bottom: 2rem;
+        }
+        .add-item-card h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        /* --- FORMS --- */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .flex-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+            color: #555;
+            font-weight: 500;
+        }
+        input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .add-btn {
+            width: 100%;
+            background-color: #0176d3;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .add-btn:hover {
+            background-color: #015bb2;
+        }
+        .add-btn:disabled {
+            background-color: #c9c9c9;
+            cursor: not-allowed;
+        }
+        .pay-btn {
+            width: 100%;
+            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .pay-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        /* --- LISTS --- */
+        .list-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--app-primary-color);
+        }
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .grocery-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+        }
+        .grocery-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+        .item-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            width: 40px;
+            text-align: center;
+        }
+        .item-details {
+            flex-grow: 1;
+        }
+        .item-name {
+            display: block;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--app-primary-color);
+            text-transform: capitalize;
+        }
+        .item-meta {
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+        .item-price {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.1rem;
+        }
+        .empty-state {
+            text-align: center;
+            color: #95a5a6;
+            padding: 2rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px dashed #ccc;
+        }
+        /* --- MODAL --- */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+            /* Hidden by default */
+        }
+        .modal-backdrop.visible {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal h2 {
+            color: var(--app-primary-color);
+            margin-top: 0;
+        }
+        .qr-placeholder {
+            margin: 1.5rem 0;
+            border: 1px solid #eee;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .qr-placeholder img {
+            max-width: 100%;
+            height: auto;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .modal-actions button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+        .cancel-btn {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+        .confirm-btn {
+            background: #27ae60;
+            color: white;
+        }
+        /* VIEW TOGGLING */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🛒 Grocery Tracker</h1>
+            <p class="date" id="currentDate">Loading...</p>
+        </div>
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab active" data-target="home" onclick="switchTab('home')">My List</button>
+            <button class="tab" data-target="history" onclick="switchTab('history')">History</button>
+        </div>
+        <!-- HOME VIEW -->
+        <div id="home" class="view-section active">
+            <div class="summary-card">
+                <h2>Total Spent Today</h2>
+                <div class="total-amount" id="dailyTotal">$0.00</div>
+                <button id="payBtn" class="pay-btn" style="display: none;" onclick="openPaymentModal()">Pay via
+                    QR</button>
+            </div>
+            <div class="add-item-card">
+                <h3>Add New Item</h3>
+                <div class="form-group flex-item">
+                    <label>Item Name</label>
+                    <input type="text" id="itemName" placeholder="e.g. Milk, Bread, Apples..." autocomplete="off">
+                </div>
+                <div class="form-row">
+                    <div class="flex-item">
+                        <label>Price</label>
+                        <input type="number" id="itemPrice" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="flex-item">
+                        <label>Quantity</label>
+                        <input type="number" id="itemQuantity" value="1" min="1">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="addBtn" class="add-btn" disabled onclick="addItem()">Add Item</button>
+                </div>
+            </div>
+            <div class="list-section">
+                <h3>Today's Items</h3>
+                <div id="itemsContainer" class="items-list"></div>
+            </div>
+        </div>
+        <!-- HISTORY VIEW -->
+        <div id="history" class="view-section">
+            <div class="list-section">
+                <h3>Purchase History</h3>
+                <div id="historyContainer" class="items-list"></div>
+            </div>
+        </div>
+        <!-- PAYMENT MODAL -->
+        <div id="paymentModal" class="modal-backdrop">
+            <div class="modal">
+                <h2>Scan to Pay</h2>
+                <p id="modalTotal">Total: $0.00</p>
+                <div class="qr-placeholder">
+                    <!-- Mock QR -->
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=GroceryPayment"
+                        alt="QR Code" />
+                </div>
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closePaymentModal()">Cancel</button>
+                    <button class="confirm-btn" onclick="confirmPayment()">Simulate Scan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        /* --- STATE --- */
+        let groceryItems = [];
+        let historyItems = [];
+        /* --- EMOJI MAPPING --- */
+        const emojiMap = {
+            'apple': '🍎', 'banana': '🍌', 'grape': '🍇', 'melon': '🍈', 'watermelon': '🍉',
+            'orange': '🍊', 'lemon': '🍋', 'pineapple': '🍍', 'mango': '🥭', 'corn': '🌽',
+            'carrot': '🥕', 'potato': '🥔', 'tomato': '🍅', 'eggplant': '🍆', 'cucumber': '🥒',
+            'broccoli': '🥦', 'bread': '🍞', 'milk': '🥛', 'cheese': '🧀', 'egg': '🥚',
+            'meat': '🥩', 'chicken': '🍗', 'fish': '🐟', 'coffee': '☕', 'tea': '🍵',
+            'beer': '🍺', 'wine': '🍷', 'water': '💧', 'rice': '🍚', 'noodle': '🍜',
+            'pizza': '🍕', 'burger': '🍔', 'fries': '🍟', 'cookie': '🍪', 'chocolate': '🍫',
+            'default': '🛍️'
+        };
+        /* --- INIT --- */
+        window.onload = function () {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString(undefined, options);
+            // Input Listeners
+            document.getElementById('itemName').addEventListener('input', validateForm);
+            document.getElementById('itemPrice').addEventListener('input', validateForm);
+            render();
+        };
+        /* --- LOGIC --- */
+        function getEmoji(name) {
+            if (!name) return emojiMap['default'];
+            const lowerName = name.toLowerCase();
+            for (const key in emojiMap) {
+                if (lowerName.includes(key) && key !== 'default') return emojiMap[key];
+            }
+            return emojiMap['default'];
+        }
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+        function validateForm() {
+            const name = document.getElementById('itemName').value;
+            const price = document.getElementById('itemPrice').value;
+            document.getElementById('addBtn').disabled = !(name && price);
+        }
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const qty = parseInt(document.getElementById('itemQuantity').value) || 1;
+            groceryItems.unshift({
+                id: Date.now(),
+                name: name,
+                price: price,
+                qty: qty,
+                total: price * qty,
+                emoji: getEmoji(name)
+            });
+            // Reset Form
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemQuantity').value = '1';
+            validateForm();
+            render();
+        }
+        /* --- RENDERING --- */
+        function render() {
+            // 1. Calculate Total
+            const total = groceryItems.reduce((sum, item) => sum + item.total, 0);
+            document.getElementById('dailyTotal').textContent = formatMoney(total);
+            // 2. Show/Hide Pay Button
+            document.getElementById('payBtn').style.display = groceryItems.length > 0 ? 'inline-block' : 'none';
+            // 3. Render Current List
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = '';
+            if (groceryItems.length === 0) {
+                container.innerHTML = `<div class="empty-state"><p>No items added yet today.</p></div>`;
+            } else {
+                groceryItems.forEach(item => {
+                    container.innerHTML += `
+                        <div class="grocery-item">
+                            <div class="item-icon">${item.emoji}</div>
+                            <div class="item-details">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-meta">Qty: ${item.qty}</span>
+                            </div>
+                            <div class="item-price">${formatMoney(item.total)}</div>
+                        </div>
+                    `;
+                });
+            }
+            // 4. Render History
+            const histContainer = document.getElementById('historyContainer');
+            histContainer.innerHTML = '';
+            if (historyItems.length === 0) {
+                histContainer.innerHTML = `<div class="empty-state"><p>No past purchases found.</p></div>`;
+            } else {
+                historyItems.forEach(item => {
+                    histContainer.innerHTML += `
+                        <div class="grocery-item">
+                            <div class="item-icon">${item.emoji}</div>
+                            <div class="item-details">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-meta">${item.date} • Qty: ${item.qty}</span>
+                            </div>
+                            <div class="item-price">${formatMoney(item.total)}</div>
+                        </div>
+                    `;
+                });
+            }
+        }
+        /* --- PAYMENT FLOW --- */
+        function openPaymentModal() {
+            const total = document.getElementById('dailyTotal').textContent;
+            document.getElementById('modalTotal').textContent = `Total: ${total}`;
+            document.getElementById('paymentModal').classList.add('visible');
+        }
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('visible');
+        }
+        function confirmPayment() {
+            // Move items to history
+            const dateStr = new Date().toLocaleDateString();
+            const purchased = groceryItems.map(item => ({ ...item, date: dateStr }));
+            historyItems = [...purchased, ...historyItems];
+            groceryItems = []; // Clear list
+            closePaymentModal();
+            render();
+            alert("Payment Successful! Items moved to History.");
+            switchTab('history');
+        }
+        /* --- TABS --- */
+        function switchTab(view) {
+            // Update Tab Classes
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-target="${view}"]`).classList.add('active');
+            // Update View Visibility
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById(view).classList.add('active');
+        }
+    </script>
+</body>
+</html>
